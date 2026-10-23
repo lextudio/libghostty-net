@@ -3,6 +3,7 @@ name: Windows ARM64 native assets
 on:
   push:
     branches: [master]
+    tags: ['v*']
     paths:
       - 'Justfile'
       - 'scripts/build-windows-terminal.cmd'
@@ -22,6 +23,10 @@ on:
       - '.github/workflows/windows-arm64-native.yml'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   native-assets:
     name: Build and test win-arm64 assets
@@ -38,6 +43,21 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: 0.15.2
+      - name: Restore the non-Windows ARM64 runtime assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          $package = Join-Path $PWD 'artifacts/LibGhostty.Net.1.0.2.nupkg'
+          Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/libghostty.net/1.0.2/libghostty.net.1.0.2.nupkg' -OutFile $package
+          $expanded = Join-Path $PWD 'artifacts/LibGhostty.Net.1.0.2'
+          Expand-Archive -LiteralPath $package -DestinationPath $expanded
+          foreach ($rid in 'win-x64', 'linux-x64', 'linux-arm64', 'osx-x64', 'osx-arm64') {
+            $source = Join-Path $expanded "runtimes/$rid/native"
+            $destination = Join-Path $PWD "artifacts/native/$rid"
+            if (-not (Test-Path -LiteralPath $source)) { throw "The 1.0.2 package lacks $rid assets." }
+            New-Item -ItemType Directory -Force -Path $destination | Out-Null
+            Get-ChildItem -LiteralPath $source -File | Copy-Item -Destination $destination -Force
+          }
       - name: Build the ARM64 Windows native assets
         shell: pwsh
         run: |
@@ -64,23 +84,49 @@ jobs:
       - name: Pack and inspect the ARM64 package assets
         shell: pwsh
         run: |
-          dotnet pack src/LibGhostty.Net/LibGhostty.Net.csproj --configuration Release --no-build --output artifacts/packages -p:Version=1.0.3-arm64-ci --verbosity minimal
+          [xml]$project = Get-Content src/LibGhostty.Net/LibGhostty.Net.csproj
+          $projectVersion = $project.Project.PropertyGroup.Version | Select-Object -First 1
+          $tagVersion = '${{ github.ref_name }}'.TrimStart('v')
+          if ('${{ github.ref_type }}' -eq 'tag' -and $tagVersion -ne $projectVersion) {
+            throw "Tag version $tagVersion does not match project version $projectVersion."
+          }
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { $projectVersion } else { "$projectVersion-ci.${{ github.run_number }}" }
+          dotnet build src/LibGhostty.Net/LibGhostty.Net.csproj --configuration Release --no-restore --verbosity minimal
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $package = Get-ChildItem artifacts/packages/LibGhostty.Net.1.0.3-arm64-ci.nupkg | Select-Object -First 1
+          dotnet pack src/LibGhostty.Net/LibGhostty.Net.csproj --configuration Release --no-build --output artifacts/packages -p:Version=$version --verbosity minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $package = Get-ChildItem "artifacts/packages/LibGhostty.Net.$version.nupkg" | Select-Object -First 1
           if ($null -eq $package) { throw 'The ARM64 package was not produced.' }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
           try {
             $entries = @($archive.Entries.FullName)
-            foreach ($file in 'ghostty-vt.dll', 'conpty.dll', 'OpenConsole.exe') {
-              if ($entries -notcontains "runtimes/win-arm64/native/$file") {
-                throw "The package lacks runtimes/win-arm64/native/$file."
+            $required = @{
+              'win-x64' = 'ghostty-vt.dll', 'conpty.dll', 'OpenConsole.exe'
+              'win-arm64' = 'ghostty-vt.dll', 'conpty.dll', 'OpenConsole.exe'
+              'linux-x64' = 'libghostty-vt.so', 'libmuxer-pty.so'
+              'linux-arm64' = 'libghostty-vt.so', 'libmuxer-pty.so'
+              'osx-x64' = 'libghostty-vt.dylib', 'libmuxer-pty.dylib'
+              'osx-arm64' = 'libghostty-vt.dylib', 'libmuxer-pty.dylib'
+            }
+            foreach ($rid in $required.Keys) {
+              foreach ($file in $required[$rid]) {
+                if ($entries -notcontains "runtimes/$rid/native/$file") {
+                  throw "The package lacks runtimes/$rid/native/$file."
+                }
               }
             }
           } finally {
             $archive.Dispose()
           }
+          "PACKAGE_PATH=$($package.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Publish the release package to GitHub Packages
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          dotnet nuget push $env:PACKAGE_PATH --source 'https://nuget.pkg.github.com/lextudio/index.json' --api-key '${{ secrets.GITHUB_TOKEN }}' --skip-duplicate
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v4
         with:
           name: LibGhostty.Net-win-arm64
-          path: artifacts/packages/LibGhostty.Net.1.0.3-arm64-ci.nupkg
+          path: artifacts/packages/LibGhostty.Net.*.nupkg
