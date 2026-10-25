@@ -3,7 +3,7 @@
     <AssemblyName>LibGhostty.Net</AssemblyName>
     <RootNamespace>LibGhostty</RootNamespace>
     <PackageId>LibGhostty.Net</PackageId>
-    <Version>1.0.3</Version>
+    <Version>1.0.2</Version>
     <Title>LibGhostty.Net</Title>
     <Authors>LibGhostty.Net contributors</Authors>
     <Description>Cross-platform .NET 10 bindings for Ghostty's virtual-terminal engine, with platform-native PTY process hosting and packaged runtime assets for Windows, Linux, and macOS.</Description>
@@ -54,12 +54,6 @@
       <RuntimeIdentifier>linux-arm64</RuntimeIdentifier>
     </NativeAsset>
 
-    <NativeAsset Include="$(NativeAssetsRoot)/osx-x64/libghostty-vt.dylib" Condition="Exists('$(NativeAssetsRoot)/osx-x64/libghostty-vt.dylib')">
-      <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
-    </NativeAsset>
-    <NativeAsset Include="$(NativeAssetsRoot)/osx-x64/libmuxer-pty.dylib" Condition="Exists('$(NativeAssetsRoot)/osx-x64/libmuxer-pty.dylib')">
-      <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
-    </NativeAsset>
     <NativeAsset Include="$(NativeAssetsRoot)/osx-arm64/libghostty-vt.dylib" Condition="Exists('$(NativeAssetsRoot)/osx-arm64/libghostty-vt.dylib')">
       <RuntimeIdentifier>osx-arm64</RuntimeIdentifier>
     </NativeAsset>
@@ -89,10 +83,6 @@
            Text="linux-arm64 native assets are incomplete. Build libghostty-vt.so and libmuxer-pty.so together." />
     <Error Condition="Exists('$(NativeAssetsRoot)/linux-arm64/libmuxer-pty.so') and !Exists('$(NativeAssetsRoot)/linux-arm64/libghostty-vt.so')"
            Text="linux-arm64 native assets are incomplete. Build libghostty-vt.so and libmuxer-pty.so together." />
-    <Error Condition="Exists('$(NativeAssetsRoot)/osx-x64/libghostty-vt.dylib') and !Exists('$(NativeAssetsRoot)/osx-x64/libmuxer-pty.dylib')"
-           Text="osx-x64 native assets are incomplete. Build libghostty-vt.dylib and libmuxer-pty.dylib together." />
-    <Error Condition="Exists('$(NativeAssetsRoot)/osx-x64/libmuxer-pty.dylib') and !Exists('$(NativeAssetsRoot)/osx-x64/libghostty-vt.dylib')"
-           Text="osx-x64 native assets are incomplete. Build libghostty-vt.dylib and libmuxer-pty.dylib together." />
     <Error Condition="Exists('$(NativeAssetsRoot)/osx-arm64/libghostty-vt.dylib') and !Exists('$(NativeAssetsRoot)/osx-arm64/libmuxer-pty.dylib')"
            Text="osx-arm64 native assets are incomplete. Build libghostty-vt.dylib and libmuxer-pty.dylib together." />
     <Error Condition="Exists('$(NativeAssetsRoot)/osx-arm64/libmuxer-pty.dylib') and !Exists('$(NativeAssetsRoot)/osx-arm64/libghostty-vt.dylib')"

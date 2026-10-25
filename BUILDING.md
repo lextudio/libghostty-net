@@ -181,7 +181,6 @@ The macOS native output directories are:
 
 ```text
 artifacts/native/osx-arm64/
-artifacts/native/osx-x64/
 ```
 
 The x64 and ARM64 macOS libraries must be rebuilt together when changing the Ghostty ABI, the cross compiler, or the deployment target.
@@ -211,9 +210,6 @@ runtimes/linux-x64/native/
 runtimes/linux-arm64/native/
  libghostty-vt.so
  libmuxer-pty.so
-runtimes/osx-x64/native/
- libghostty-vt.dylib
- libmuxer-pty.dylib
 runtimes/osx-arm64/native/
  libghostty-vt.dylib
  libmuxer-pty.dylib
