@@ -2,7 +2,6 @@ name: Windows ARM64 native assets
 
 on:
   push:
-    branches: [master]
     tags: ['v*']
     paths:
       - 'Justfile'
