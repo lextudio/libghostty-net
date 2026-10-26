@@ -114,6 +114,11 @@ jobs:
                 }
               }
             }
+            foreach ($notice in 'THIRD-PARTY-NOTICES/Ghostty/LICENSE', 'THIRD-PARTY-NOTICES/WindowsTerminal/LICENSE', 'THIRD-PARTY-NOTICES/WindowsTerminal/NOTICE.md') {
+              if ($entries -notcontains $notice) {
+                throw "The package lacks required third-party notice $notice."
+              }
+            }
           } finally {
             $archive.Dispose()
           }

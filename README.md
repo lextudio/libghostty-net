@@ -165,8 +165,13 @@ Build and native asset instructions, including the macOS SDK workflow, are maint
 
 ## Native components and licensing
 
-This package redistributes native components from the Ghostty fork and the Windows Terminal integration used by this project. Review the licenses and notices in [`native/ghostty`](native/ghostty) and [`native/windows-terminal`](native/windows-terminal) before redistributing the package.
+This package redistributes native components from Ghostty and the Windows Terminal integration used by this project. Every nupkg carries the applicable upstream material in `THIRD-PARTY-NOTICES/`:
+
+- `Ghostty/LICENSE` for the Ghostty VT library;
+- `WindowsTerminal/LICENSE` and `WindowsTerminal/NOTICE.md` for `conpty.dll` and `OpenConsole.exe`, including Windows Terminal's third-party notices.
+
+The package's own `LICENSE` covers only LibGhostty.Net. Keep the notice files with any redistribution of the package or its native assets.
 
 ## License
 
-The LibGhostty.Net project is licensed under the [MIT License](LICENSE). The redistributed Ghostty and Windows Terminal components retain their own licenses; see the notices under [`native/ghostty`](native/ghostty) and [`native/windows-terminal`](native/windows-terminal).
+The LibGhostty.Net project is licensed under the [MIT License](LICENSE). The redistributed Ghostty and Windows Terminal components retain their own licenses; see `THIRD-PARTY-NOTICES/` in the package and the notices under [`native/ghostty`](native/ghostty) and [`native/windows-terminal`](native/windows-terminal).

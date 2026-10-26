@@ -22,6 +22,9 @@
   <ItemGroup>
     <None Include="$(MSBuildProjectDirectory)/../../README.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildProjectDirectory)/../../LICENSE" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildProjectDirectory)/../../native/ghostty/LICENSE" Pack="true" PackagePath="THIRD-PARTY-NOTICES/Ghostty" />
+    <None Include="$(MSBuildProjectDirectory)/../../native/windows-terminal/LICENSE" Pack="true" PackagePath="THIRD-PARTY-NOTICES/WindowsTerminal" />
+    <None Include="$(MSBuildProjectDirectory)/../../native/windows-terminal/NOTICE.md" Pack="true" PackagePath="THIRD-PARTY-NOTICES/WindowsTerminal" />
     <NativeAsset Include="$(NativeAssetsRoot)/win-x64/ghostty-vt.dll" Condition="Exists('$(NativeAssetsRoot)/win-x64/ghostty-vt.dll')">
       <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </NativeAsset>
@@ -63,6 +66,10 @@
   </ItemGroup>
 
   <Target Name="ValidateNativeAssetSets" BeforeTargets="Pack">
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)/../../native/ghostty/LICENSE')"
+           Text="Ghostty's LICENSE must be present before packing redistributed Ghostty native assets." />
+    <Error Condition="!Exists('$(MSBuildProjectDirectory)/../../native/windows-terminal/LICENSE') or !Exists('$(MSBuildProjectDirectory)/../../native/windows-terminal/NOTICE.md')"
+           Text="Windows Terminal's LICENSE and NOTICE.md must be present before packing redistributed Windows native assets." />
     <Error Condition="Exists('$(NativeAssetsRoot)/win-x64/ghostty-vt.dll') and (!Exists('$(NativeAssetsRoot)/win-x64/conpty.dll') or !Exists('$(NativeAssetsRoot)/win-x64/OpenConsole.exe'))"
            Text="win-x64 native assets are incomplete. Build ghostty-vt.dll, conpty.dll, and OpenConsole.exe together." />
     <Error Condition="Exists('$(NativeAssetsRoot)/win-x64/conpty.dll') and (!Exists('$(NativeAssetsRoot)/win-x64/ghostty-vt.dll') or !Exists('$(NativeAssetsRoot)/win-x64/OpenConsole.exe'))"
