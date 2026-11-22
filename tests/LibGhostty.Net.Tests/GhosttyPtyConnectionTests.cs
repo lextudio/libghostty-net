@@ -21,7 +21,9 @@ public sealed class GhosttyPtyConnectionTests
         );
 
         Assert.Contains(EchoMarker, output, StringComparison.Ordinal);
+#pragma warning disable CA2027
         var completed = await Task.WhenAny(exit.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+#pragma warning restore CA2027
         Assert.Same(exit.Task, completed);
         Assert.Equal(0, await exit.Task);
         Assert.True(connection.WaitForExit(0));
@@ -39,7 +41,9 @@ public sealed class GhosttyPtyConnectionTests
 
         connection.Kill();
 
+#pragma warning disable CA2027
         var completed = await Task.WhenAny(exit.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+#pragma warning restore CA2027
         Assert.Same(exit.Task, completed);
         Assert.NotEqual(0, await exit.Task);
     }
